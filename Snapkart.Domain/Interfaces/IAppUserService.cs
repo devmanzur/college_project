@@ -8,7 +8,8 @@ namespace Snapkart.Domain.Interfaces
 {
     public interface IAppUserService
     {
-        Task<Result<AppUserDto>> RegisterCustomer(AccountRegisterDto dto);
-        
+        Task<Result<AppUserDto>> RegisterCustomer(CustomerRegisterDto dto);
+
+        Task<Result<AppUserDto>> RegisterMerchant(MerchantRegisterDto dto);
     }
 }

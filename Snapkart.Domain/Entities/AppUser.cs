@@ -15,6 +15,7 @@ namespace Snapkart.Domain.Entities
             Role = role;
             ApprovalStatus = ApprovalStatus.Pending;
             UserName = phoneNumber;
+            Subscriptions = new List<UserSubscription>();
         }
 
         public string Name { get; private set; }
@@ -24,6 +25,11 @@ namespace Snapkart.Domain.Entities
         public UserRole Role { get; private set; }
         public ApprovalStatus ApprovalStatus { get; private set; }
         public List<AppNotification> Notifications { get; set; }
-        public List<Category> Subscriptions { get; set; }
+        public List<UserSubscription> Subscriptions { get; set; }
+
+        public void AddSubscriptions(List<int> subscriptionIds)
+        {
+            subscriptionIds.ForEach(x=>Subscriptions.Add(new UserSubscription(){CategoryId = x}));
+        }
     }
 }

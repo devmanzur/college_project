@@ -10,7 +10,7 @@ using Snapkart.Infrastructure.Data;
 namespace Snapkart.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20210123130636_Initial")]
+    [Migration("20210123154038_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -188,6 +188,10 @@ namespace Snapkart.Infrastructure.Migrations
                     b.Property<string>("Address")
                         .HasColumnType("text");
 
+                    b.Property<string>("ApprovalStatus")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("text");
@@ -228,11 +232,9 @@ namespace Snapkart.Infrastructure.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("boolean");
 
-                    b.Property<long>("RoleId")
-                        .HasColumnType("bigint");
-
-                    b.Property<int?>("RoleId1")
-                        .HasColumnType("integer");
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
@@ -253,24 +255,10 @@ namespace Snapkart.Infrastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
 
-                    b.HasIndex("RoleId1");
+                    b.HasIndex("PhoneNumber")
+                        .IsUnique();
 
                     b.ToTable("AspNetUsers");
-                });
-
-            modelBuilder.Entity("Snapkart.Domain.Entities.AppUserRole", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("AppUserRole");
                 });
 
             modelBuilder.Entity("Snapkart.Domain.Entities.Category", b =>
@@ -353,15 +341,6 @@ namespace Snapkart.Infrastructure.Migrations
                     b.Navigation("Recipient");
                 });
 
-            modelBuilder.Entity("Snapkart.Domain.Entities.AppUser", b =>
-                {
-                    b.HasOne("Snapkart.Domain.Entities.AppUserRole", "Role")
-                        .WithMany("Users")
-                        .HasForeignKey("RoleId1");
-
-                    b.Navigation("Role");
-                });
-
             modelBuilder.Entity("Snapkart.Domain.Entities.Category", b =>
                 {
                     b.HasOne("Snapkart.Domain.Entities.AppUser", null)
@@ -374,11 +353,6 @@ namespace Snapkart.Infrastructure.Migrations
                     b.Navigation("Notifications");
 
                     b.Navigation("Subscriptions");
-                });
-
-            modelBuilder.Entity("Snapkart.Domain.Entities.AppUserRole", b =>
-                {
-                    b.Navigation("Users");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Identity;
@@ -21,7 +22,7 @@ namespace Snapkart.Domain.Services
             _imageServer = imageServer;
         }
 
-        public async Task<Result<AppUserDto>> RegisterCustomer(AccountRegisterDto dto)
+        public async Task<Result<AppUserDto>> RegisterCustomer(CustomerRegisterDto dto)
         {
             try
             {
@@ -38,12 +39,39 @@ namespace Snapkart.Domain.Services
 
                 return registration.Succeeded
                     ? Result.Success(new AppUserDto(user))
-                    : Result.Failure<AppUserDto>("failed to register user");
+                    : Result.Failure<AppUserDto>(registration.Errors.FirstOrDefault()?.Description);
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
                 return Result.Failure<AppUserDto>("failed to register user");
+            }
+        }
+
+        public async Task<Result<AppUserDto>> RegisterMerchant(MerchantRegisterDto dto)
+        {
+            try
+            {
+                var imageUpload = await _imageServer.UploadImage(dto.Image);
+                if (imageUpload.IsFailure)
+                {
+                    return Result.Failure<AppUserDto>("failed to upload image");
+                }
+                
+                var merchant = new AppUser(UserRole.Merchant, dto.Name, dto.PhoneNumber, dto.Address, imageUpload.Value);
+                merchant.AddSubscriptions(dto.SubscriptionIds);
+                
+                var registration =
+                    await _userManager.CreateAsync(merchant, dto.Password);
+
+                return registration.Succeeded
+                    ? Result.Success(new AppUserDto(merchant))
+                    : Result.Failure<AppUserDto>(registration.Errors.FirstOrDefault()?.Description);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return Result.Failure<AppUserDto>("failed to register merchant");
             }
         }
     }

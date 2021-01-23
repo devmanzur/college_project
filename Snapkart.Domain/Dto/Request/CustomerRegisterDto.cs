@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Snapkart.Domain.Dto.Request
 {
-    public class AccountRegisterDto
+    public class CustomerRegisterDto
     {
         public string Name { get; set; }
         public string PhoneNumber { get; set; }
