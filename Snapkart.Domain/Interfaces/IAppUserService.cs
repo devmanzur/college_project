@@ -12,5 +12,6 @@ namespace Snapkart.Domain.Interfaces
 
         Task<Result<AppUserDto>> RegisterMerchant(MerchantRegisterDto dto);
         Task<Result<AppUser>> SignIn(UserSignInDto dto);
+        Task<AppUserDto> GetProfile(SignedInUser user);
     }
 }

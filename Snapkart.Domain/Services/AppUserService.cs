@@ -7,6 +7,7 @@ using Snapkart.Domain.Constants;
 using Snapkart.Domain.Dto.Request;
 using Snapkart.Domain.Dto.Response;
 using Snapkart.Domain.Entities;
+using Snapkart.Domain.Extensions;
 using Snapkart.Domain.Interfaces;
 
 namespace Snapkart.Domain.Services
@@ -91,6 +92,13 @@ namespace Snapkart.Domain.Services
             }
 
             return Result.Failure<AppUser>("invalid user/password combination");
+        }
+
+        public async Task<AppUserDto> GetProfile(SignedInUser user)
+        {
+            var profile = await _userManager.FindByNameAsync(user.Claims.GetUsername());
+            if (profile == null) return null;
+            return new AppUserDto(profile);
         }
     }
 }
