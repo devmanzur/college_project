@@ -57,10 +57,11 @@ namespace Snapkart.Domain.Services
                 {
                     return Result.Failure<AppUserDto>("failed to upload image");
                 }
-                
-                var merchant = new AppUser(UserRole.Merchant, dto.Name, dto.PhoneNumber, dto.Address, imageUpload.Value);
+
+                var merchant = new AppUser(UserRole.Merchant, dto.Name, dto.PhoneNumber, dto.Address,
+                    imageUpload.Value);
                 merchant.AddSubscriptions(dto.SubscriptionIds);
-                
+
                 var registration =
                     await _userManager.CreateAsync(merchant, dto.Password);
 
@@ -73,6 +74,23 @@ namespace Snapkart.Domain.Services
                 Console.WriteLine(e.Message);
                 return Result.Failure<AppUserDto>("failed to register merchant");
             }
+        }
+
+        public async Task<Result<AppUser>> SignIn(UserSignInDto dto)
+        {
+            var user = await _userManager.FindByNameAsync(dto.PhoneNumber);
+            if (user == null)
+            {
+                return Result.Failure<AppUser>("user not found");
+            }
+
+            var isValidPassword = await _userManager.CheckPasswordAsync(user, dto.Password);
+            if (isValidPassword)
+            {
+                return Result.Success(user);
+            }
+
+            return Result.Failure<AppUser>("invalid user/password combination");
         }
     }
 }

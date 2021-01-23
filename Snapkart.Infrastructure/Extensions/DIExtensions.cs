@@ -10,14 +10,25 @@ namespace Snapkart.Infrastructure.Extensions
 {
     public static class DiExtensions
     {
-        public static void SetupInfrastructureDependencies(this IServiceCollection services, IConfiguration configuration)
+        public static void SetupInfrastructureDependencies(this IServiceCollection services,
+            IConfiguration configuration)
         {
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(configuration.GetConnectionString("SqlDatabase")));
 
-            services.AddIdentityCore<AppUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            services.AddIdentityCore<AppUser>(options =>
+                {
+                    options.SignIn.RequireConfirmedAccount = true;
+                    options.Password.RequireDigit = true;
+                    options.Password.RequireLowercase = false;
+                    options.Password.RequireNonAlphanumeric = false;
+                    options.Password.RequireUppercase = false;
+                    options.Password.RequiredLength = 6;
+                    options.Password.RequiredUniqueChars = 0;
+                    options.User.RequireUniqueEmail = false;
+                })
                 .AddEntityFrameworkStores<ApplicationDbContext>();
-
+            
             services.AddTransient(typeof(ICrudRepository<>), typeof(EfRepository<>));
 
             services.AddTransient<IImageServerBroker, MinioImageServer>();

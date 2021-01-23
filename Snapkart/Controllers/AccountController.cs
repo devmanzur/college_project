@@ -1,9 +1,9 @@
 using System.Threading.Tasks;
-using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Mvc;
 using Snapkart.Contract;
 using Snapkart.Domain.Dto.Request;
 using Snapkart.Domain.Interfaces;
+using Snapkart.Helpers;
 
 namespace Snapkart.Controllers
 {
@@ -16,6 +16,19 @@ namespace Snapkart.Controllers
         public AccountController(IAppUserService appUserService)
         {
             _appUserService = appUserService;
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> SignIn([FromForm] UserSignInDto dto)
+        {
+            var signIn = await _appUserService.SignIn(dto);
+            if (signIn.IsSuccess)
+            {
+                var token = await TokenIssuer.GenerateToken(signIn.Value);
+                return Ok(Envelope.Ok(token));
+            }
+
+            return BadRequest(Envelope.Error(signIn.Error));
         }
 
         [HttpPost("customer")]
