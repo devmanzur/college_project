@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -18,31 +21,36 @@ namespace Snapkart.Infrastructure.Data
 
         public Task<T> FindById(int id, CancellationToken cancellationToken = default)
         {
-            return _dbContext.Set<T>().FirstOrDefaultAsync(x=>x.Id == id, cancellationToken);
+            return _dbContext.Set<T>().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
 
         public Task<List<T>> ListAll(CancellationToken cancellationToken = default)
         {
-            return _dbContext.Set<T>().AsQueryable().ToListAsync(cancellationToken);
+            return _dbContext.Set<T>().AsQueryable().AsNoTracking().ToListAsync(cancellationToken);
         }
 
-        public async Task<T> Create(T applicant, CancellationToken cancellationToken = default)
+        public async Task<T> Create(T query, CancellationToken cancellationToken = default)
         {
-            await _dbContext.Set<T>().AddAsync(applicant, cancellationToken);
+            await _dbContext.Set<T>().AddAsync(query, cancellationToken);
             await _dbContext.SaveChangesAsync(cancellationToken);
-            return applicant;
+            return query;
         }
 
-        public async Task Update(T applicant, CancellationToken cancellationToken = default)
+        public async Task Update(T query, CancellationToken cancellationToken = default)
         {
-            _dbContext.Set<T>().Update(applicant);
+            _dbContext.Set<T>().Update(query);
             await _dbContext.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task Delete(T applicant, CancellationToken cancellationToken = default)
+        public async Task Delete(T query, CancellationToken cancellationToken = default)
         {
-            _dbContext.Set<T>().Remove(applicant);
+            _dbContext.Set<T>().Remove(query);
             await _dbContext.SaveChangesAsync(cancellationToken);
+        }
+
+        public IQueryable<T> Query()
+        {
+            return _dbContext.Set<T>().AsQueryable();
         }
     }
 }

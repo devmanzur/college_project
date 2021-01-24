@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Snapkart.Infrastructure.Data;
@@ -10,9 +11,10 @@ using Snapkart.Infrastructure.Data;
 namespace Snapkart.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210124204022_AddedSCategoryIdToSnap")]
+    partial class AddedSCategoryIdToSnap
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -160,18 +162,18 @@ namespace Snapkart.Infrastructure.Migrations
                     b.Property<string>("Message")
                         .HasColumnType("text");
 
-                    b.Property<string>("Subject")
+                    b.Property<long>("RecipientId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("RecipientId1")
                         .HasColumnType("text");
 
-                    b.Property<int>("SubjectId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("UserId")
+                    b.Property<string>("Subject")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("RecipientId1");
 
                     b.ToTable("AppNotification");
                 });
@@ -276,18 +278,13 @@ namespace Snapkart.Infrastructure.Migrations
                     b.Property<string>("ImageUrl")
                         .HasColumnType("text");
 
-                    b.Property<string>("MakerId")
-                        .HasColumnType("text");
-
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
 
-                    b.Property<int>("SnapQueryId")
+                    b.Property<int?>("SnapQueryId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("MakerId");
 
                     b.HasIndex("SnapQueryId");
 
@@ -318,9 +315,6 @@ namespace Snapkart.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
                         .UseIdentityByDefaultColumn();
-
-                    b.Property<int>("AcceptedBidId")
-                        .HasColumnType("integer");
 
                     b.Property<int>("CategoryId")
                         .HasColumnType("integer");
@@ -432,28 +426,18 @@ namespace Snapkart.Infrastructure.Migrations
 
             modelBuilder.Entity("Snapkart.Domain.Entities.AppNotification", b =>
                 {
-                    b.HasOne("Snapkart.Domain.Entities.AppUser", "User")
+                    b.HasOne("Snapkart.Domain.Entities.AppUser", "Recipient")
                         .WithMany("Notifications")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("RecipientId1");
 
-                    b.Navigation("User");
+                    b.Navigation("Recipient");
                 });
 
             modelBuilder.Entity("Snapkart.Domain.Entities.Bid", b =>
                 {
-                    b.HasOne("Snapkart.Domain.Entities.AppUser", "Maker")
+                    b.HasOne("Snapkart.Domain.Entities.SnapQuery", null)
                         .WithMany("Bids")
-                        .HasForeignKey("MakerId");
-
-                    b.HasOne("Snapkart.Domain.Entities.SnapQuery", "SnapQuery")
-                        .WithMany("Bids")
-                        .HasForeignKey("SnapQueryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Maker");
-
-                    b.Navigation("SnapQuery");
+                        .HasForeignKey("SnapQueryId");
                 });
 
             modelBuilder.Entity("Snapkart.Domain.Entities.UserSubscription", b =>
@@ -476,8 +460,6 @@ namespace Snapkart.Infrastructure.Migrations
 
             modelBuilder.Entity("Snapkart.Domain.Entities.AppUser", b =>
                 {
-                    b.Navigation("Bids");
-
                     b.Navigation("Notifications");
 
                     b.Navigation("Subscriptions");

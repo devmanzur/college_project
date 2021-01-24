@@ -32,6 +32,7 @@ namespace Snapkart.Infrastructure.Extensions
             services.AddTransient(typeof(ICrudRepository<>), typeof(EfRepository<>));
 
             services.AddTransient<IImageServerBroker, MinioImageServer>();
+            services.AddTransient<ISnapQueryRepository, SnapQueryRepository>();
         }
     }
 }

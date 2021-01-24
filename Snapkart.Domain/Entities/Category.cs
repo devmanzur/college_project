@@ -6,5 +6,7 @@ namespace Snapkart.Domain.Entities
     {
         public string Name { get; set; }
         public List<UserSubscription> Subscriptions { get; set; }
+        public List<int> TagIds { get; set; }
+
     }
 }

@@ -9,7 +9,6 @@ namespace Snapkart.Domain.Extensions
         public static void SetupDomainDependencies(this IServiceCollection services)
         {
             services.AddTransient<IAppUserService, AppUserService>();
-            services.AddTransient<ICategoryService, CategoryService>();
         }
     }
 }
