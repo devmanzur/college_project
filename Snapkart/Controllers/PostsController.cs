@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -36,6 +37,7 @@ namespace Snapkart.Controllers
             return Ok(Envelope.Ok(posts));
         }
 
+        [Authorize(Roles = "Customer")]
         [HttpGet("{id}/bids")]
         public async Task<IActionResult> GetBids(int id)
         {
@@ -43,6 +45,7 @@ namespace Snapkart.Controllers
             return Ok(Envelope.Ok(bids.Select(x => new BidResponseDto(x))));
         }
 
+        [Authorize(Roles = "Customer")]
         [HttpPost]
         public async Task<IActionResult> CreatePost([FromForm] CreatePostDto dto)
         {
@@ -64,6 +67,7 @@ namespace Snapkart.Controllers
             return BadRequest(Envelope.Error(imageUpload.Error));
         }
 
+        [Authorize(Roles = "Customer")]
         [HttpPost("{id}/bids/{bidId}/accept")]
         public async Task<IActionResult> AcceptBid(int id, int bidId)
         {
@@ -84,6 +88,7 @@ namespace Snapkart.Controllers
             return Ok(Envelope.Ok(new ContactDetailResponseDto(bidMaker)));
         }
 
+        [Authorize(Roles = "Merchant")]
         [HttpPost("{id}/bids")]
         public async Task<IActionResult> MakeBid(int id, [FromForm] CreateBidDto dto)
         {

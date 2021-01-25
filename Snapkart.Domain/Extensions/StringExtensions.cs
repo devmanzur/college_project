@@ -6,7 +6,21 @@ namespace Snapkart.Domain.Extensions
     {
         public static bool ValidPhoneNumber(this string number)
         {
-            return Regex.Match(number, @"^\+8801([13-9]\d{1})[\d]{7}$").Success;
+            if (
+                number.StartsWith("011") ||
+                number.StartsWith("013") ||
+                number.StartsWith("014") ||
+                number.StartsWith("015") ||
+                number.StartsWith("016") ||
+                number.StartsWith("017") ||
+                number.StartsWith("018") ||
+                number.StartsWith("019")
+            )
+            {
+                return number.Length == 11;
+            }
+
+            return false;
         }
     }
 }
