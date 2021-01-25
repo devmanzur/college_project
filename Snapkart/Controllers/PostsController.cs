@@ -18,15 +18,15 @@ namespace Snapkart.Controllers
     {
         private readonly ICrudRepository<SnapQuery> _postRepository;
         private readonly ICrudRepository<Bid> _bidRepository;
-        private readonly IImageServerBroker _imageServerBroker;
+        private readonly IStorageServiceBroker _storageServiceBroker;
         private readonly UserManager<AppUser> _userManager;
 
         public PostsController(ICrudRepository<Bid> bidRepository,
-            IImageServerBroker imageServerBroker, UserManager<AppUser> userManager, ISnapQueryRepository postRepository)
+            IStorageServiceBroker storageServiceBroker, UserManager<AppUser> userManager, ISnapQueryRepository postRepository)
         {
             _postRepository = postRepository;
             _bidRepository = bidRepository;
-            _imageServerBroker = imageServerBroker;
+            _storageServiceBroker = storageServiceBroker;
             _userManager = userManager;
         }
 
@@ -56,7 +56,7 @@ namespace Snapkart.Controllers
                 return BadRequest(Envelope.Error(validate.Errors.FirstOrDefault()?.ErrorMessage));
             }
             
-            var imageUpload = await _imageServerBroker.UploadImage(dto.Image);
+            var imageUpload = await _storageServiceBroker.UploadImage(dto.Image);
 
             if (imageUpload.IsSuccess)
             {
@@ -102,7 +102,7 @@ namespace Snapkart.Controllers
             var user = await _userManager.FindByIdAsync(User.GetUserId());
             var post = await _postRepository.FindById(id);
 
-            var imageUpload = await _imageServerBroker.UploadImage(dto.Image);
+            var imageUpload = await _storageServiceBroker.UploadImage(dto.Image);
             if (imageUpload.IsSuccess)
             {
                 var bid = new Bid(imageUpload.Value, dto.Details, dto.Price);

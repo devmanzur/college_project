@@ -15,9 +15,9 @@ namespace Snapkart.Domain.Services
     public class AppUserService : IAppUserService
     {
         private readonly UserManager<AppUser> _userManager;
-        private readonly IImageServerBroker _imageServer;
+        private readonly IStorageServiceBroker _imageServer;
 
-        public AppUserService(UserManager<AppUser> userManager, IImageServerBroker imageServer)
+        public AppUserService(UserManager<AppUser> userManager, IStorageServiceBroker imageServer)
         {
             _userManager = userManager;
             _imageServer = imageServer;

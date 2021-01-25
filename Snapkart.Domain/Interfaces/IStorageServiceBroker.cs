@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Snapkart.Domain.Interfaces
 {
-    public interface IImageServerBroker
+    public interface IStorageServiceBroker
     {
         public Task<Result<string>> UploadImage(IFormFile file);
     }
