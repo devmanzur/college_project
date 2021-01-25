@@ -1,9 +1,9 @@
 using System;
 using Snapkart.Domain.Entities;
 
-namespace Snapkart.Domain.Dto.Request
+namespace Snapkart.Domain.Dto.Response
 {
-    public class BidDto
+    public class BidResponseDto
     {
         public DateTimeOffset CreatedAt { get; private set; }
         public string ImageUrl { get; private set; }
@@ -11,7 +11,7 @@ namespace Snapkart.Domain.Dto.Request
         public decimal Price { get; private set; }
         public int Id { get; set; }
 
-        public BidDto(Bid bid)
+        public BidResponseDto(Bid bid)
         {
             Id = bid.Id;
             CreatedAt = bid.CreatedAt;

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Snapkart.Contract;
 using Snapkart.Domain.Dto.Request;
+using Snapkart.Domain.Dto.Response;
 using Snapkart.Domain.Entities;
 using Snapkart.Domain.Extensions;
 using Snapkart.Domain.Interfaces;
@@ -39,12 +40,19 @@ namespace Snapkart.Controllers
         public async Task<IActionResult> GetBids(int id)
         {
             var bids = await _bidRepository.Query().Where(x => x.SnapQueryId == id).ToListAsync();
-            return Ok(Envelope.Ok(bids.Select(x => new BidDto(x))));
+            return Ok(Envelope.Ok(bids.Select(x => new BidResponseDto(x))));
         }
 
         [HttpPost]
         public async Task<IActionResult> CreatePost([FromForm] CreatePostDto dto)
         {
+            var validator = new CreatePostDtoValidator();
+            var validate = await validator.ValidateAsync(dto);
+            if (!validate.IsValid)
+            {
+                return BadRequest(Envelope.Error(validate.Errors.FirstOrDefault()?.ErrorMessage));
+            }
+            
             var imageUpload = await _imageServerBroker.UploadImage(dto.Image);
 
             if (imageUpload.IsSuccess)
@@ -73,12 +81,19 @@ namespace Snapkart.Controllers
             await _postRepository.Update(post);
             await _userManager.UpdateAsync(bidMaker);
 
-            return Ok(Envelope.Ok(new ContactDetailDto(bidMaker)));
+            return Ok(Envelope.Ok(new ContactDetailResponseDto(bidMaker)));
         }
 
         [HttpPost("{id}/bids")]
         public async Task<IActionResult> MakeBid(int id, [FromForm] CreateBidDto dto)
         {
+            var validator = new CreateBidDtoValidator();
+            var validate = await validator.ValidateAsync(dto);
+            if (!validate.IsValid)
+            {
+                return BadRequest(Envelope.Error(validate.Errors.FirstOrDefault()?.ErrorMessage));
+            }
+            
             var user = await _userManager.FindByIdAsync(User.GetUserId());
             var post = await _postRepository.FindById(id);
 

@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Snapkart.Contract;
@@ -21,6 +22,13 @@ namespace Snapkart.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> SignIn([FromForm] UserSignInDto dto)
         {
+            var validator = new UserSignInDtoValidator();
+            var validate = await validator.ValidateAsync(dto);
+            if (!validate.IsValid)
+            {
+                return BadRequest(Envelope.Error(validate.Errors.FirstOrDefault()?.ErrorMessage));
+            }
+
             var signIn = await _appUserService.SignIn(dto);
             if (signIn.IsSuccess)
             {
@@ -34,6 +42,13 @@ namespace Snapkart.Controllers
         [HttpPost("customer")]
         public async Task<IActionResult> RegisterCustomer([FromForm] CustomerRegisterDto dto)
         {
+            var validator = new CustomerRegisterDtoValidator();
+            var validate = await validator.ValidateAsync(dto);
+            if (!validate.IsValid)
+            {
+                return BadRequest(Envelope.Error(validate.Errors.FirstOrDefault()?.ErrorMessage));
+            }
+            
             var registration = await _appUserService.RegisterCustomer(dto);
             if (registration.IsSuccess)
             {
@@ -46,6 +61,14 @@ namespace Snapkart.Controllers
         [HttpPost("merchant")]
         public async Task<IActionResult> RegisterMerchant([FromForm] MerchantRegisterDto dto)
         {
+            
+            var validator = new MerchantRegisterDtoValidator();
+            var validate = await validator.ValidateAsync(dto);
+            if (!validate.IsValid)
+            {
+                return BadRequest(Envelope.Error(validate.Errors.FirstOrDefault()?.ErrorMessage));
+            }
+            
             var registration = await _appUserService.RegisterMerchant(dto);
             if (registration.IsSuccess)
             {

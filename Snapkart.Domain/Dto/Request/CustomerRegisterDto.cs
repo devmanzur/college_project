@@ -1,4 +1,7 @@
+using System.Text.RegularExpressions;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
+using Snapkart.Domain.Extensions;
 
 namespace Snapkart.Domain.Dto.Request
 {
@@ -9,5 +12,17 @@ namespace Snapkart.Domain.Dto.Request
         public string Address { get; set; }
         public IFormFile Image { get; set; }
         public string Password { get; set; }
+    }
+
+    public class CustomerRegisterDtoValidator : AbstractValidator<CustomerRegisterDto>
+    {
+        public CustomerRegisterDtoValidator()
+        {
+            RuleFor(x => x.Name).NotNull().NotEmpty();
+            RuleFor(x => x.Image).NotNull();
+            RuleFor(x => x.Address).NotNull().NotEmpty();
+            RuleFor(x => x.Password).NotNull().NotEmpty().Must(x=>x.Length>=6);
+            RuleFor(x => x.PhoneNumber).NotNull().NotEmpty().Must(x=>x.ValidPhoneNumber());
+        }
     }
 }

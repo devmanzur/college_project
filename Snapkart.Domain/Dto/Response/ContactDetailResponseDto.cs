@@ -1,10 +1,10 @@
 using Snapkart.Domain.Entities;
 
-namespace Snapkart.Domain.Dto.Request
+namespace Snapkart.Domain.Dto.Response
 {
-    public class ContactDetailDto
+    public class ContactDetailResponseDto
     {
-        public ContactDetailDto(AppUser user)
+        public ContactDetailResponseDto(AppUser user)
         {
             PhoneNumber = user.PhoneNumber;
             Name = user.Name;
