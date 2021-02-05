@@ -21,6 +21,7 @@ namespace Snapkart.Infrastructure.Brokers
         private readonly string _secretKey;
         private readonly string _bucketName;
         private readonly string _localImageDirectory;
+        private readonly string _publicUrl;
         private readonly IConfiguration _configuration;
         private MinioClient s3Client;
         private const string ContentType = "image/jpeg";
@@ -33,6 +34,7 @@ namespace Snapkart.Infrastructure.Brokers
             _secretKey = configuration.GetSection("MinioConfigurationSettings").GetSection("SecretKey").Value;
             _bucketName = configuration.GetSection("MinioConfigurationSettings").GetSection("BucketName").Value;
             _localImageDirectory = configuration.GetSection("MinioConfigurationSettings").GetSection("LocalImageLocation").Value;
+            _publicUrl = configuration.GetSection("MinioConfigurationSettings").GetSection("PublicUrl").Value;
             s3Client = new MinioClient(_server, _accessKey, _secretKey);
         }
 
@@ -41,7 +43,7 @@ namespace Snapkart.Infrastructure.Brokers
             try
             {
                 var imageId = await Run(image, _bucketName);
-                return string.IsNullOrEmpty(imageId) ? throw new Exception() : imageId;
+                return string.IsNullOrEmpty(imageId) ? throw new Exception() : _publicUrl+imageId;
             }
             catch (Exception ex)
             {

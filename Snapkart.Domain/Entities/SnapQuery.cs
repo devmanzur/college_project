@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using CSharpFunctionalExtensions;
 
 namespace Snapkart.Domain.Entities
 {
@@ -10,7 +11,7 @@ namespace Snapkart.Domain.Entities
         {
         }
 
-        public SnapQuery(string description, string imageUrl, int categoryId, List<int> tags)
+        public SnapQuery(string createdBy, string description, string imageUrl, int categoryId, List<int> tags)
         {
             Description = description;
             ImageUrl = imageUrl;
@@ -18,7 +19,10 @@ namespace Snapkart.Domain.Entities
             TagIds = tags;
             CreatedAt = DateTimeOffset.UtcNow;
             Bids = new List<Bid>();
+            CreatedBy = createdBy;
         }
+
+        public string CreatedBy { get; private set; }
 
         public int AcceptedBidId { get; set; }
         public string Description { get; private set; }
@@ -33,12 +37,17 @@ namespace Snapkart.Domain.Entities
             Bids.Add(bid);
         }
 
-        public AppUser Accept(AppUser user, int bidId)
+        public Result<AppUser> Accept(AppUser user, int bidId)
         {
-            var bid = Bids.FirstOrDefault(x => x.Id == bidId);
-            if (bid == null) return null;
-            AcceptedBidId = bid.Id;
-            return bid.Maker;
+            if (user.Id == CreatedBy)
+            {
+                var bid = Bids.FirstOrDefault(x => x.Id == bidId);
+                if (bid == null) return Result.Failure<AppUser>("bid not found");
+                AcceptedBidId = bid.Id;
+                return Result.Success(bid.Maker);
+            }
+
+            return Result.Failure<AppUser>("you are not allowed to accept bids for this query");
         }
     }
 }

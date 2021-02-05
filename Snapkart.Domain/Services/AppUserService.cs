@@ -27,14 +27,14 @@ namespace Snapkart.Domain.Services
         {
             try
             {
-                var imageUpload = await _imageServer.UploadImage(dto.Image);
-                if (imageUpload.IsFailure)
-                {
-                    return Result.Failure<AppUserDto>("failed to upload image");
-                }
+                // var imageUpload = await _imageServer.UploadImage(dto.Image);
+                // if (imageUpload.IsFailure)
+                // {
+                //     return Result.Failure<AppUserDto>("failed to upload image");
+                // }
 
 
-                var user = new AppUser(UserRole.Customer, dto.Name, dto.PhoneNumber, dto.Address, imageUpload.Value);
+                var user = new AppUser(UserRole.Customer, dto.Name, dto.PhoneNumber, dto.Address, dto.ImageUrl);
                 var registration =
                     await _userManager.CreateAsync(user, dto.Password);
 
@@ -53,14 +53,14 @@ namespace Snapkart.Domain.Services
         {
             try
             {
-                var imageUpload = await _imageServer.UploadImage(dto.Image);
-                if (imageUpload.IsFailure)
-                {
-                    return Result.Failure<AppUserDto>("failed to upload image");
-                }
+                // var imageUpload = await _imageServer.UploadImage(dto.Image);
+                // if (imageUpload.IsFailure)
+                // {
+                //     return Result.Failure<AppUserDto>("failed to upload image");
+                // }
 
                 var merchant = new AppUser(UserRole.Merchant, dto.Name, dto.PhoneNumber, dto.Address,
-                    imageUpload.Value);
+                    dto.ImageUrl);
                 merchant.AddSubscriptions(dto.SubscriptionIds);
 
                 var registration =

@@ -22,7 +22,8 @@ namespace Snapkart.Controllers
         private readonly UserManager<AppUser> _userManager;
 
         public PostsController(ICrudRepository<Bid> bidRepository,
-            IStorageServiceBroker storageServiceBroker, UserManager<AppUser> userManager, ISnapQueryRepository postRepository)
+            IStorageServiceBroker storageServiceBroker, UserManager<AppUser> userManager,
+            ISnapQueryRepository postRepository)
         {
             _postRepository = postRepository;
             _bidRepository = bidRepository;
@@ -55,16 +56,10 @@ namespace Snapkart.Controllers
             {
                 return BadRequest(Envelope.Error(validate.Errors.FirstOrDefault()?.ErrorMessage));
             }
-            
-            var imageUpload = await _storageServiceBroker.UploadImage(dto.Image);
 
-            if (imageUpload.IsSuccess)
-            {
-                await _postRepository.Create(new SnapQuery(dto.Details, imageUpload.Value, dto.CategoryId, dto.TagIds));
-                return Ok(Envelope.Ok());
-            }
-
-            return BadRequest(Envelope.Error(imageUpload.Error));
+            await _postRepository.Create(new SnapQuery(User.GetUserId(), dto.Details, dto.Image, dto.CategoryId,
+                dto.TagIds));
+            return Ok(Envelope.Ok());
         }
 
         [Authorize(Roles = "Customer")]
@@ -73,19 +68,19 @@ namespace Snapkart.Controllers
         {
             var user = await _userManager.FindByIdAsync(User.GetUserId());
             var post = await _postRepository.FindById(id);
-            var bidMaker = post.Accept(user, bidId);
-            if (bidMaker == null)
+            var accept = post.Accept(user, bidId);
+            if (accept.IsFailure)
             {
-                return BadRequest(Envelope.Error("Bid not found"));
+                return BadRequest(Envelope.Error(accept.Error));
             }
 
-            bidMaker.AddNotification(new AppNotification("SnapQuery", id,
+            accept.Value.AddNotification(new AppNotification("SnapQuery", id,
                 $"{user.Name} has accepted your bid, you can now contact with him"));
 
             await _postRepository.Update(post);
-            await _userManager.UpdateAsync(bidMaker);
+            await _userManager.UpdateAsync(accept.Value);
 
-            return Ok(Envelope.Ok(new ContactDetailResponseDto(bidMaker)));
+            return Ok(Envelope.Ok(new ContactDetailResponseDto(accept.Value)));
         }
 
         [Authorize(Roles = "Merchant")]
@@ -98,24 +93,18 @@ namespace Snapkart.Controllers
             {
                 return BadRequest(Envelope.Error(validate.Errors.FirstOrDefault()?.ErrorMessage));
             }
-            
+
             var user = await _userManager.FindByIdAsync(User.GetUserId());
             var post = await _postRepository.FindById(id);
 
-            var imageUpload = await _storageServiceBroker.UploadImage(dto.Image);
-            if (imageUpload.IsSuccess)
-            {
-                var bid = new Bid(imageUpload.Value, dto.Details, dto.Price);
-                user.AddBid(bid);
-                post.MakeBid(bid);
+            var bid = new Bid(dto.Image, dto.Details, dto.Price);
+            user.AddBid(bid);
+            post.MakeBid(bid);
 
-                await _userManager.UpdateAsync(user);
-                await _postRepository.Update(post);
+            await _userManager.UpdateAsync(user);
+            await _postRepository.Update(post);
 
-                return Ok(Envelope.Ok());
-            }
-
-            return BadRequest(Envelope.Error(imageUpload.Error));
+            return Ok(Envelope.Ok());
         }
     }
 }
