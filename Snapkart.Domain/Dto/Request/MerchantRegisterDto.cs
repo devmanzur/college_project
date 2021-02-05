@@ -8,6 +8,8 @@ namespace Snapkart.Domain.Dto.Request
     public class MerchantRegisterDto : CustomerRegisterDto
     {
         public List<int> SubscriptionIds { get; set; }
+        public int AreaId { get; set; }
+        public int CityId { get; set; }
     }
 
     public class MerchantRegisterDtoValidator : AbstractValidator<MerchantRegisterDto>
@@ -17,6 +19,8 @@ namespace Snapkart.Domain.Dto.Request
             RuleFor(x => x.Name).NotNull().NotEmpty();
             RuleFor(x => x.SubscriptionIds).NotNull().NotEmpty().Must(x => x.Count > 0);
             RuleFor(x => x.ImageUrl).NotNull();
+            RuleFor(x => x.AreaId).NotNull().NotEqual(0);
+            RuleFor(x => x.CityId).NotNull().NotEqual(0);
             RuleFor(x => x.Address).NotNull().NotEmpty();
             RuleFor(x => x.PhoneNumber).NotNull().NotEmpty().Must(x => x.ValidPhoneNumber());
             RuleFor(x => x.Password).NotNull().NotEmpty().Must(x => x.Length >= 6);

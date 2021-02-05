@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Snapkart.Infrastructure.Data;
@@ -10,9 +11,10 @@ using Snapkart.Infrastructure.Data;
 namespace Snapkart.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210205185337_PostCreatedBy")]
+    partial class PostCreatedBy
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -191,12 +193,6 @@ namespace Snapkart.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("AreaId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("CityId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("text");
@@ -266,26 +262,6 @@ namespace Snapkart.Infrastructure.Migrations
                     b.ToTable("AspNetUsers");
                 });
 
-            modelBuilder.Entity("Snapkart.Domain.Entities.Area", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
-
-                    b.Property<int>("CityId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CityId");
-
-                    b.ToTable("Area");
-                });
-
             modelBuilder.Entity("Snapkart.Domain.Entities.Bid", b =>
                 {
                     b.Property<int>("Id")
@@ -338,21 +314,6 @@ namespace Snapkart.Infrastructure.Migrations
                     b.ToTable("Category");
                 });
 
-            modelBuilder.Entity("Snapkart.Domain.Entities.City", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Cities");
-                });
-
             modelBuilder.Entity("Snapkart.Domain.Entities.SnapQuery", b =>
                 {
                     b.Property<int>("Id")
@@ -363,13 +324,7 @@ namespace Snapkart.Infrastructure.Migrations
                     b.Property<int>("AcceptedBidId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("AreaId")
-                        .HasColumnType("integer");
-
                     b.Property<int>("CategoryId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("CityId")
                         .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("CreatedAt")
@@ -489,17 +444,6 @@ namespace Snapkart.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Snapkart.Domain.Entities.Area", b =>
-                {
-                    b.HasOne("Snapkart.Domain.Entities.City", "City")
-                        .WithMany("Areas")
-                        .HasForeignKey("CityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("City");
-                });
-
             modelBuilder.Entity("Snapkart.Domain.Entities.Bid", b =>
                 {
                     b.HasOne("Snapkart.Domain.Entities.AppUser", "Maker")
@@ -547,11 +491,6 @@ namespace Snapkart.Infrastructure.Migrations
             modelBuilder.Entity("Snapkart.Domain.Entities.Category", b =>
                 {
                     b.Navigation("Subscriptions");
-                });
-
-            modelBuilder.Entity("Snapkart.Domain.Entities.City", b =>
-                {
-                    b.Navigation("Areas");
                 });
 
             modelBuilder.Entity("Snapkart.Domain.Entities.SnapQuery", b =>

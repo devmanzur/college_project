@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -5,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Snapkart.Contract;
+using Snapkart.Domain.Constants;
 using Snapkart.Domain.Dto.Request;
 using Snapkart.Domain.Dto.Response;
 using Snapkart.Domain.Entities;
@@ -17,32 +19,57 @@ namespace Snapkart.Controllers
     public class PostsController : AuthorizedEndpoint
     {
         private readonly ICrudRepository<SnapQuery> _postRepository;
+        private readonly ApplicationDbContext _dbContext;
         private readonly ICrudRepository<Bid> _bidRepository;
-        private readonly IStorageServiceBroker _storageServiceBroker;
         private readonly UserManager<AppUser> _userManager;
 
-        public PostsController(ICrudRepository<Bid> bidRepository,
-            IStorageServiceBroker storageServiceBroker, UserManager<AppUser> userManager,
-            ISnapQueryRepository postRepository)
+        public PostsController(ICrudRepository<Bid> bidRepository, UserManager<AppUser> userManager,
+            ISnapQueryRepository postRepository, ApplicationDbContext dbContext)
         {
             _postRepository = postRepository;
+            _dbContext = dbContext;
             _bidRepository = bidRepository;
-            _storageServiceBroker = storageServiceBroker;
             _userManager = userManager;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAllPosts()
         {
-            var posts = await _postRepository.Query().ToListAsync();
+            var user = await _dbContext.Users.Include(x => x.Subscriptions)
+                .FirstOrDefaultAsync(x => x.Id == User.GetUserId());
+
+            List<SnapQuery> posts;
+            if (user.Role == UserRole.Merchant)
+            {
+                var subscriptions = user.Subscriptions.Select(x => x.CategoryId);
+                //only show items within his subscription and area
+                posts = await _postRepository.Query()
+                    .Where(x => subscriptions.Contains(x.CategoryId) && x.AreaId == user.AreaId).ToListAsync();
+            }
+            else
+            {
+                posts = await _postRepository.Query().ToListAsync();
+            }
+
             return Ok(Envelope.Ok(posts));
         }
 
-        [Authorize(Roles = "Customer")]
         [HttpGet("{id}/bids")]
         public async Task<IActionResult> GetBids(int id)
         {
-            var bids = await _bidRepository.Query().Where(x => x.SnapQueryId == id).ToListAsync();
+            var user = await _userManager.FindByIdAsync(User.GetUserId());
+            List<Bid> bids;
+            if (user.Role == UserRole.Merchant)
+            {
+                //only show his own bids
+                bids = await _bidRepository.Query().Where(x => x.SnapQueryId == id && x.MakerId == user.Id)
+                    .ToListAsync();
+            }
+            else
+            {
+                bids = await _bidRepository.Query().Where(x => x.SnapQueryId == id).ToListAsync();
+            }
+
             return Ok(Envelope.Ok(bids.Select(x => new BidResponseDto(x))));
         }
 
@@ -58,7 +85,7 @@ namespace Snapkart.Controllers
             }
 
             await _postRepository.Create(new SnapQuery(User.GetUserId(), dto.Details, dto.Image, dto.CategoryId,
-                dto.TagIds));
+                dto.TagIds, dto.AreaId, dto.CityId));
             return Ok(Envelope.Ok());
         }
 
@@ -98,13 +125,18 @@ namespace Snapkart.Controllers
             var post = await _postRepository.FindById(id);
 
             var bid = new Bid(dto.Image, dto.Details, dto.Price);
-            user.AddBid(bid);
-            post.MakeBid(bid);
+            var makeBid = user.AddBid(bid);
 
-            await _userManager.UpdateAsync(user);
-            await _postRepository.Update(post);
+            if (makeBid.IsSuccess)
+            {
+                post.MakeBid(bid);
+                await _userManager.UpdateAsync(user);
+                await _postRepository.Update(post);
 
-            return Ok(Envelope.Ok());
+                return Ok(Envelope.Ok());
+            }
+
+            return BadRequest(Envelope.Error(makeBid.Error));
         }
     }
 }

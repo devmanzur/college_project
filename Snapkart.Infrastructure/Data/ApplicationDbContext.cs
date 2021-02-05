@@ -8,6 +8,7 @@ namespace Snapkart.Infrastructure.Data
     public class ApplicationDbContext : IdentityDbContext<AppUser>
     {
         public DbSet<Tag> Tags { get; set; }
+        public DbSet<City> Cities { get; set; }
         public DbSet<SnapQuery> SnapQueries { get; set; }
         public ApplicationDbContext(DbContextOptions options) : base(options)
         {

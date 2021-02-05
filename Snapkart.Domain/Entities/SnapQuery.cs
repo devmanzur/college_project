@@ -11,19 +11,23 @@ namespace Snapkart.Domain.Entities
         {
         }
 
-        public SnapQuery(string createdBy, string description, string imageUrl, int categoryId, List<int> tags)
+        public SnapQuery(string createdBy, string description, string imageUrl, int categoryId, List<int> tags,
+            int areaId, int cityId)
         {
             Description = description;
             ImageUrl = imageUrl;
             CategoryId = categoryId;
             TagIds = tags;
+            AreaId = areaId;
+            CityId = cityId;
             CreatedAt = DateTimeOffset.UtcNow;
             Bids = new List<Bid>();
             CreatedBy = createdBy;
         }
 
         public string CreatedBy { get; private set; }
-
+        public int AreaId { get; private set; }
+        public int CityId { get; private set; }
         public int AcceptedBidId { get; set; }
         public string Description { get; private set; }
         public string ImageUrl { get; private set; }

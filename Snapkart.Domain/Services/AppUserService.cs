@@ -61,6 +61,7 @@ namespace Snapkart.Domain.Services
 
                 var merchant = new AppUser(UserRole.Merchant, dto.Name, dto.PhoneNumber, dto.Address,
                     dto.ImageUrl);
+                merchant.SetArea(dto.CityId, dto.AreaId);
                 merchant.AddSubscriptions(dto.SubscriptionIds);
 
                 var registration =

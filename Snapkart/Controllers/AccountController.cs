@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Snapkart.Contract;
 using Snapkart.Domain.Dto.Request;
@@ -18,6 +19,7 @@ namespace Snapkart.Controllers
         {
             _appUserService = appUserService;
         }
+        [AllowAnonymous]
 
         [HttpPost("login")]
         public async Task<IActionResult> SignIn([FromForm] UserSignInDto dto)
@@ -38,6 +40,7 @@ namespace Snapkart.Controllers
 
             return BadRequest(Envelope.Error(signIn.Error));
         }
+        [AllowAnonymous]
 
         [HttpPost("customer")]
         public async Task<IActionResult> RegisterCustomer([FromForm] CustomerRegisterDto dto)
@@ -57,6 +60,7 @@ namespace Snapkart.Controllers
 
             return BadRequest(Envelope.Error(registration.Error));
         }
+        [AllowAnonymous]
 
         [HttpPost("merchant")]
         public async Task<IActionResult> RegisterMerchant([FromForm] MerchantRegisterDto dto)

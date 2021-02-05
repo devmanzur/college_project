@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Snapkart.Contract;
 using Snapkart.Domain.Dto.Request;
@@ -17,6 +18,7 @@ namespace Snapkart.Controllers
             _repository = repository;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetTags()
         {
@@ -24,11 +26,12 @@ namespace Snapkart.Controllers
             return Ok(Envelope.Ok(tags.Select(x => new TagDto(x)).ToList()));
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create([FromForm] string name)
-        {
-            var tag = await _repository.Create(new Tag(name));
-            return Ok(Envelope.Ok(tag));
-        }
+        // [AllowAnonymous]
+        // [HttpPost]
+        // public async Task<IActionResult> Create([FromForm] string name)
+        // {
+        //     var tag = await _repository.Create(new Tag(name));
+        //     return Ok(Envelope.Ok(tag));
+        // }
     }
 }
