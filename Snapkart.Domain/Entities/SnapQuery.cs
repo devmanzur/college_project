@@ -33,7 +33,8 @@ namespace Snapkart.Domain.Entities
         public string ImageUrl { get; private set; }
         public int CategoryId { get; private set; }
         public DateTimeOffset CreatedAt { get; private set; }
-        public List<int> TagIds { get; private set; }
+        public List<int> TagIds { get; private set; } = new List<int>();
+        public List<string> Likes { get; private set; } = new List<string>();
         public List<Bid> Bids { get; private set; } = new List<Bid>();
 
         public void MakeBid(Bid bid)
@@ -41,9 +42,9 @@ namespace Snapkart.Domain.Entities
             Bids.Add(bid);
         }
 
-        public Result<AppUser> Accept(AppUser user, int bidId)
+        public Result<AppUser> Accept(string userId, int bidId)
         {
-            if (user.Id == CreatedBy)
+            if (userId == CreatedBy)
             {
                 var bid = Bids.FirstOrDefault(x => x.Id == bidId);
                 if (bid == null) return Result.Failure<AppUser>("bid not found");
@@ -52,6 +53,15 @@ namespace Snapkart.Domain.Entities
             }
 
             return Result.Failure<AppUser>("you are not allowed to accept bids for this query");
+        }
+
+        public void LikedBy(string userId)
+        {
+            if (Likes == null)
+            {
+                Likes = new List<string>();
+            }
+            Likes.Add(userId);
         }
     }
 }
