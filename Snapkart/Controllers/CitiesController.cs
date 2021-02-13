@@ -41,7 +41,7 @@ namespace Snapkart.Controllers
         //     var city = await _repository.Create(new City(name));
         //     return Ok(Envelope.Ok(new CityDto(city)));
         // }
-
+        //
         // [AllowAnonymous]
         // [HttpPost("{id}/areas")]
         // public async Task<IActionResult> Create(int id, [FromForm] AreaCreateDto dto)

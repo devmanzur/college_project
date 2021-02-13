@@ -6,6 +6,7 @@ namespace Snapkart.Domain.Extensions
     {
         public static bool ValidPhoneNumber(this string number)
         {
+            if (number == null) return false;
             if (
                 number.StartsWith("011") ||
                 number.StartsWith("013") ||

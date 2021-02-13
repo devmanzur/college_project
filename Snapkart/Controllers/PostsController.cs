@@ -33,7 +33,7 @@ namespace Snapkart.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllPosts()
+        public async Task<IActionResult> GetAllPosts([FromQuery] PagingQuery query)
         {
             var user = await _dbContext.Users.Include(x => x.Subscriptions)
                 .FirstOrDefaultAsync(x => x.Id == User.GetUserId());
@@ -44,19 +44,26 @@ namespace Snapkart.Controllers
                 var subscriptions = user.Subscriptions?.Select(x => x.CategoryId).ToList();
                 //only show items within his subscription and area
                 posts = await _postRepository.Query()
+                    .Include(x => x.AppUser)
                     .Where(x => subscriptions.Contains(x.CategoryId) && x.AreaId == user.AreaId)
                     .Select(x => new SnapPostDto()
                     {
-                        CreatedBy = x.CreatedBy,
+                        Id = x.Id,
+                        CreatedBy = x.AppUser.Name,
+                        UserImageUrl = x.AppUser.ImageUrl,
                         CreatedAt = x.CreatedAt,
                         AreaId = x.AreaId,
                         CityId = x.CityId,
                         Description = x.Description,
                         ImageUrl = x.ImageUrl,
                         CategoryId = x.CategoryId,
+                        Location = x.Location,
                         Bids = x.Bids.Count,
                         Likes = x.Likes.Count,
                     })
+                    .OrderByDescending(x => x.CreatedAt)
+                    .Skip(query.Skip())
+                    .Take(query.PageSize)
                     .ToListAsync();
             }
             else
@@ -64,16 +71,22 @@ namespace Snapkart.Controllers
                 posts = await _postRepository.Query()
                     .Select(x => new SnapPostDto()
                     {
-                        CreatedBy = x.CreatedBy,
+                        Id = x.Id,
+                        CreatedBy = x.AppUser.Name,
+                        UserImageUrl = x.AppUser.ImageUrl,
                         CreatedAt = x.CreatedAt,
                         AreaId = x.AreaId,
                         CityId = x.CityId,
+                        Location = x.Location,
                         Description = x.Description,
                         ImageUrl = x.ImageUrl,
                         CategoryId = x.CategoryId,
                         Bids = x.Bids.Count,
                         Likes = x.Likes.Count,
                     })
+                    .OrderByDescending(x => x.CreatedAt)
+                    .Skip(query.Skip())
+                    .Take(query.PageSize)
                     .ToListAsync();
             }
 
@@ -93,12 +106,13 @@ namespace Snapkart.Controllers
             if (User.GetUserRole() == UserRole.Merchant.ToString())
             {
                 //only show his own bids
-                bids = await _bidRepository.Query().Where(x => x.SnapQueryId == id && x.MakerId == User.GetUserId())
+                bids = await _bidRepository.Query().Include(x => x.Maker)
+                    .Where(x => x.SnapQueryId == id && x.MakerId == User.GetUserId())
                     .ToListAsync();
             }
-            else if (post.CreatedBy == User.GetUserId())
+            else if (post.AppUserId == User.GetUserId())
             {
-                bids = await _bidRepository.Query().Where(x => x.SnapQueryId == id).ToListAsync();
+                bids = await _bidRepository.Query().Include(x => x.Maker).Where(x => x.SnapQueryId == id).ToListAsync();
             }
 
             return Ok(Envelope.Ok(bids.Select(x => new BidResponseDto(x))));
@@ -115,8 +129,25 @@ namespace Snapkart.Controllers
                 return BadRequest(Envelope.Error(validate.Errors.FirstOrDefault()?.ErrorMessage));
             }
 
-            await _postRepository.Create(new SnapQuery(User.GetUserId(), dto.Details, dto.Image, dto.CategoryId,
-                dto.TagIds, dto.AreaId, dto.CityId));
+            var city = await _dbContext.Cities.Include(x => x.Areas).FirstOrDefaultAsync(x => x.Id == dto.CityId);
+            var area = city?.Areas.FirstOrDefault(x => x.Id == dto.AreaId);
+
+            if (city == null || area == null)
+            {
+                return BadRequest(Envelope.Error("invalid location"));
+            }
+
+            var user = await _dbContext.Users.Include(x => x.Subscriptions)
+                .FirstOrDefaultAsync(x => x.Id == User.GetUserId());
+
+            var query = new SnapQuery(dto.Details, dto.Image, dto.CategoryId,
+                dto.TagIds, area, city);
+
+            user.Add(query);
+
+            _dbContext.Users.Update(user);
+            await _dbContext.SaveChangesAsync();
+
             return Ok(Envelope.Ok());
         }
 
@@ -178,11 +209,11 @@ namespace Snapkart.Controllers
             }
 
             var bid = new Bid(dto.Image, dto.Details, dto.Price);
-            var makeBid = user.AddBid(bid);
+            var makeBid = user.Add(bid);
 
             if (makeBid.IsSuccess)
             {
-                post.MakeBid(bid);
+                post.Add(bid);
                 await _userManager.UpdateAsync(user);
                 await _postRepository.Update(post);
 

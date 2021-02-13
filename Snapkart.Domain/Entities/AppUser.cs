@@ -30,13 +30,14 @@ namespace Snapkart.Domain.Entities
         public List<AppNotification> Notifications { get; set; } = new List<AppNotification>();
         public List<UserSubscription> Subscriptions { get; set; }
         public List<Bid> Bids { get; set; } = new List<Bid>();
+        public List<SnapQuery> Queries { get; set; } = new List<SnapQuery>();
 
         public void AddSubscriptions(List<int> subscriptionIds)
         {
             subscriptionIds.ForEach(x => Subscriptions.Add(new UserSubscription() {CategoryId = x}));
         }
 
-        public Result AddBid(Bid bid)
+        public Result Add(Bid bid)
         {
             if (ApprovalStatus == ApprovalStatus.Approved)
             {
@@ -55,6 +56,11 @@ namespace Snapkart.Domain.Entities
         {
             CityId = cityCode;
             AreaId = areaCode;
+        }
+
+        public void Add(SnapQuery query)
+        {
+            Queries.Add(query);
         }
     }
 }
